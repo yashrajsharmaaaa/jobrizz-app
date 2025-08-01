@@ -1,4 +1,4 @@
-import jwt, { type SignOptions } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { validateEnv } from '../config/environment.js';
 
 const env = validateEnv();
@@ -25,14 +25,10 @@ export class JWTService {
      * Generate access token
      */
     static generateAccessToken(payload: TokenPayload): string {
-        const options: SignOptions = {
-            expiresIn: this.ACCESS_TOKEN_EXPIRES_IN,
-        };
-
         return jwt.sign(
             { userId: payload.userId, email: payload.email },
             this.ACCESS_TOKEN_SECRET,
-            options
+            { expiresIn: this.ACCESS_TOKEN_EXPIRES_IN as any }
         );
     }
 
@@ -40,14 +36,10 @@ export class JWTService {
      * Generate refresh token
      */
     static generateRefreshToken(payload: TokenPayload): string {
-        const options: SignOptions = {
-            expiresIn: this.REFRESH_TOKEN_EXPIRES_IN,
-        };
-
         return jwt.sign(
             { userId: payload.userId, email: payload.email },
             this.REFRESH_TOKEN_SECRET,
-            options
+            { expiresIn: this.REFRESH_TOKEN_EXPIRES_IN as any }
         );
     }
 

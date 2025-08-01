@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { UserService } from '../services/userService.js';
 import { AppError } from '../middleware/errorHandler.js';
-import { logger } from '../utils/logger.js';
+import { User } from '@prisma/client';
+
 import {
   RegisterRequest,
   LoginRequest,
@@ -124,8 +125,13 @@ export class AuthController {
       }
 
       const updates: UpdateUserRequest = req.body;
+      
+      // Filter out undefined values
+      const filteredUpdates = Object.fromEntries(
+        Object.entries(updates).filter(([_, value]) => value !== undefined)
+      ) as Partial<Pick<User, 'name' | 'email'>>;
 
-      const updatedUser = await UserService.updateUser(req.user.id, updates);
+      const updatedUser = await UserService.updateUser(req.user.id, filteredUpdates);
 
       res.json({
         success: true,

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { JWTService, TokenPayload } from '../services/jwtService.js';
+import { JWTService } from '../services/jwtService.js';
 import { UserService } from '../services/userService.js';
 import { AppError } from './errorHandler.js';
 import { logger } from '../utils/logger.js';
