@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  # Frontend
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jobrizz-frontend-prod
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    networks:
+      - jobrizz-network
+    depends_on:
+      - backend
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: jobrizz-backend-prod
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - ./backend/.env.production
+    networks:
+      - jobrizz-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - uploads_data:/app/uploads
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: jobrizz-postgres-prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: jobrizz_prod
+      POSTGRES_USER: jobrizz_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - jobrizz-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jobrizz_user -d jobrizz_prod"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: jobrizz-redis-prod
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - jobrizz-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  uploads_data:
+    driver: local
+
+networks:
+  jobrizz-network:
+    driver: bridge

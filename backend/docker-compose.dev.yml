@@ -1,0 +1,36 @@
+# Development-specific Docker Compose configuration
+# Use this for development with additional services and configurations
+
+version: '3.8'
+
+services:
+  # Extend the base postgres service for development
+  postgres:
+    environment:
+      # Enable more verbose logging in development
+      POSTGRES_LOG_STATEMENT: all
+      POSTGRES_LOG_MIN_DURATION_STATEMENT: 0
+    volumes:
+      # Add volume for development SQL scripts
+      - ./docker/postgres/dev-init.sql:/docker-entrypoint-initdb.d/dev-init.sql
+
+  # Redis with development configuration
+  redis:
+    command: redis-server --appendonly yes --requirepass "" --loglevel verbose
+
+  # Development database seeding service
+  db-seed:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: jobrizz-db-seed
+    environment:
+      DATABASE_URL: "postgresql://jobrizz_user:jobrizz_password@postgres:5432/jobrizz_dev"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - jobrizz-network
+    command: npm run db:seed
+    profiles:
+      - seed

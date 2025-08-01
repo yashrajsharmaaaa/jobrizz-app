@@ -1,0 +1,109 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  resumes  Resume[]
+  sessions UserSession[]
+
+  @@map("users")
+}
+
+model UserSession {
+  id           String   @id @default(cuid())
+  userId       String
+  refreshToken String   @unique
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_sessions")
+}
+
+model Resume {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  template  Json     // Template configuration
+  metadata  Json     // Resume metadata (version, word count, etc.)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sections ResumeSection[]
+
+  @@map("resumes")
+}
+
+model ResumeSection {
+  id       String @id @default(cuid())
+  resumeId String
+  type     String // 'personal', 'experience', 'education', 'skills', 'projects'
+  content  Json   // Section content
+  order    Int    // Display order
+
+  // Relations
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@map("resume_sections")
+}
+
+model Template {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  styles      Json     // Template styles and configuration
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("templates")
+}
+
+model ExportJob {
+  id         String    @id @default(cuid())
+  userId     String
+  resumeId   String
+  format     String    // 'pdf', 'docx'
+  status     String    // 'pending', 'processing', 'completed', 'failed'
+  filePath   String?   // Path to generated file
+  error      String?   // Error message if failed
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  completedAt DateTime?
+
+  @@map("export_jobs")
+}
+
+model AIAnalysis {
+  id         String   @id @default(cuid())
+  userId     String
+  resumeId   String
+  type       String   // 'analysis', 'correction', 'ats_score', 'job_match'
+  input      Json     // Input data for analysis
+  result     Json     // Analysis result
+  cost       Decimal? // API cost for tracking
+  createdAt  DateTime @default(now())
+
+  @@map("ai_analyses")
+}
