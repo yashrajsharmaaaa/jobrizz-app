@@ -53,7 +53,7 @@ Frontend (React) ↔ Backend API (Node.js) ↔ Database (PostgreSQL)
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/jobrizz-app.git
+   git clone https://github.com/yashrajsharmaaaa/jobrizz-app.git
    cd jobrizz-app
    ```
 
