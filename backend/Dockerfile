@@ -1,5 +1,25 @@
-# Use Node.js 18 Alpine image
-FROM node:18-alpine
+# Multi-stage build for cleaner production image
+FROM node:18-alpine AS builder
+
+# Create app directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY .npmrc ./
+COPY prisma ./prisma/
+
+# Install all dependencies (including dev dependencies for build)
+RUN npm ci --silent --no-audit --no-fund
+
+# Copy source code
+COPY . .
+
+# Generate Prisma client and build
+RUN npm run build
+
+# Production stage
+FROM node:18-alpine AS production
 
 # Install dumb-init for proper signal handling
 RUN apk add --no-cache dumb-init
@@ -9,16 +29,17 @@ WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
+COPY .npmrc ./
 COPY prisma ./prisma/
 
-# Install dependencies
-RUN npm ci
+# Install only production dependencies
+RUN npm ci --only=production --silent --no-audit --no-fund
 
-# Copy source code
-COPY . .
+# Generate Prisma client for production
+RUN npx prisma generate
 
-# Generate Prisma client and build
-RUN npm run build
+# Copy built application from builder stage
+COPY --from=builder /app/dist ./dist
 
 # Create uploads directory
 RUN mkdir -p uploads

@@ -70,6 +70,10 @@
         "tsx": "^4.19.2",
         "typescript": "^5.7.2"
     },
+    "overrides": {
+        "glob": "^10.3.10",
+        "inflight": "npm:@isaacs/inflight@^1.0.6"
+    },
     "engines": {
         "node": ">=18.0.0"
     }
