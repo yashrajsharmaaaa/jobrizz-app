@@ -56,7 +56,7 @@ const Dashboard: React.FC = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Welcome back, {user?.firstName}!
+              Welcome back, {user?.name}!
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-2">
               Optimize your resume with AI-powered insights

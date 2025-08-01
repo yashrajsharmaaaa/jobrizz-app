@@ -10,6 +10,9 @@ export class AuthService {
       console.log('Registering user with data:', data);
       const response = await APIClient.post<{ user: User }>('/api/auth/register', data);
       console.log('Registration response:', response);
+      if (!response.data) {
+        throw new Error('Invalid response from server');
+      }
       return response.data.user;
     } catch (error) {
       console.error('Registration error:', error);
@@ -23,6 +26,10 @@ export class AuthService {
   static async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
       const response = await APIClient.post<AuthResponse>('/api/auth/login', credentials);
+      
+      if (!response.data) {
+        throw new Error('Invalid response from server');
+      }
       
       // Store tokens and user data
       APIClient.setAuthTokens(response.data.accessToken, response.data.refreshToken);
@@ -57,6 +64,9 @@ export class AuthService {
   static async getProfile(): Promise<User> {
     try {
       const response = await APIClient.get<{ user: User }>('/api/auth/profile');
+      if (!response.data) {
+        throw new Error('Invalid response from server');
+      }
       this.setUser(response.data.user);
       return response.data.user;
     } catch (error) {
@@ -70,6 +80,9 @@ export class AuthService {
   static async updateProfile(updates: Partial<Pick<User, 'name' | 'email'>>): Promise<User> {
     try {
       const response = await APIClient.put<{ user: User }>('/api/auth/profile', updates);
+      if (!response.data) {
+        throw new Error('Invalid response from server');
+      }
       this.setUser(response.data.user);
       return response.data.user;
     } catch (error) {

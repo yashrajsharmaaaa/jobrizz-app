@@ -56,7 +56,7 @@ const Layout: React.FC = () => {
                     Dashboard
                   </Link>
                   <span className="text-gray-700 dark:text-gray-300">
-                    {user.firstName} {user.lastName}
+                    {user.name}
                   </span>
                   <button
                     onClick={handleLogout}
